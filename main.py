@@ -35,13 +35,13 @@ def main(page: ft.Page):
     slider = ft.Slider(
         min=0,
         max=100,
-        value=50,
+        value=100,
         divisions=100,
         label="{value}%",
         expand=True
     )
     slider.on_change = set_trans
-    trans_text = ft.Text("50%")
+    trans_text = ft.Text("100%")
 
     # выбор файла для раскадровки
     selected_video_path = None
