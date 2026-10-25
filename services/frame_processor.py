@@ -12,7 +12,7 @@ def resize_frame(frame):
 
 def apply_transparency(frame, transparency):
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
-    alpha = round(255 * (100 - transparency) / 100)
+    alpha = round(255 * transparency / 100)
     frame[:, :, 3] = alpha
     return frame
 
