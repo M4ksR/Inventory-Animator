@@ -13,7 +13,7 @@ temp_root = PROJECT_ROOT / "temp"
 
 temp_root.mkdir(parents=True, exist_ok=True)
 
-def create_resourcepack(video_path, transparency, destination_folder, max_frames=10):
+def create_resourcepack(video_path, transparency, destination_folder, max_frames=500):
     with tempfile.TemporaryDirectory(dir=temp_root, prefix="build_") as temp_dir:
         workspace = Path(temp_dir)
 

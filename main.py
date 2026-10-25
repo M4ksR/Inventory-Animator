@@ -77,6 +77,49 @@ def main(page: ft.Page):
     file_picker = ft.FilePicker()
     file_info = ft.Text("Файл не выбран")
 
+    # изменения лимита кадров
+    maximum_frames = 500
+
+    def normalize_frame_limit(e):
+        value = maximum_frames_field.value or "500"
+        value = int(value)
+        value = max(1, min(value, 2500))
+        maximum_frames_field.value = str(value)
+        page.update()
+
+    maximum_frames_field = ft.TextField(label="Лимит кадров",
+                             value=str(maximum_frames),
+                             disabled=True,
+                             input_filter=ft.InputFilter(
+                                 allow=True,
+                                 regex_string=r'^[0-9]*$'
+                             ),
+                             keyboard_type=ft.KeyboardType.NUMBER,
+                             on_blur=normalize_frame_limit,
+                             expand=True)
+
+    def cancel_change(e):
+        page.pop_dialog()
+        page.update()
+
+    def confirm_change(e):
+        maximum_frames_field.disabled = False
+        page.pop_dialog()
+        page.update()
+
+    change_frames_dialog = ft.AlertDialog(modal=True,
+                                          title=ft.Text("Предупреждение"),
+                                          content=ft.Text("Изменения лимита кадров "
+                                                          "может привести к ошибкам загрузки "
+                                                          "ресурс-пака в Minecraft"),
+                                          actions=[
+                                              ft.TextButton("Отмена", on_click=cancel_change),
+                                              ft.TextButton("Продолжить", on_click=confirm_change)
+                                          ])
+
+    def show_frames_limit_warning(e):
+        page.show_dialog(change_frames_dialog)
+
     # контейнер настроек
     settings = ft.Container(
         width=400,
@@ -98,6 +141,11 @@ def main(page: ft.Page):
                     content="Выбрать файл",
                     on_click=choose_video,
                 )
+            ]),
+            ft.Row(controls=[
+                maximum_frames_field,
+                ft.Button(content="Изменить лимит",
+                          on_click=show_frames_limit_warning)
             ]),
             file_info
         ])
@@ -125,10 +173,14 @@ def main(page: ft.Page):
 
             PROJECT_ROOT = Path(__file__).resolve().parent
 
+            normalize_frame_limit(None)
+            max_frames = int(maximum_frames_field.value)
+
             await asyncio.to_thread(create_resourcepack,
                                     selected_video_path,
                                     slider.value,
-                                    PROJECT_ROOT / "output" / name)
+                                    PROJECT_ROOT / "output" / name,
+                                    max_frames)
 
             status_preview.value = "Ресурс-Пак собран"
 
