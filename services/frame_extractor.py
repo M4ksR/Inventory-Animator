@@ -7,10 +7,7 @@ from services.frame_processor import (resize_frame,
 
 template_path = Path("assets/templates/inventory_overlay.png")
 
-def extract_frames(video_path,
-                   transparency=50,
-                   max_frames=100):
-
+def extract_frames(video_path, transparency=100, max_frames=10):
     capture = cv2.VideoCapture(video_path)
 
     try:
