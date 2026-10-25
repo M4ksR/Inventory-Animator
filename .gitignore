@@ -149,6 +149,9 @@ activemq-data/
 # SageMath parsed files
 *.sage.py
 
+# Windows build
+.exe
+
 # Environments
 .env
 .envrc

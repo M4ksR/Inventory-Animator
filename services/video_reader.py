@@ -5,7 +5,7 @@ def count_video_frames(video_path, max_frames):
 
     try:
         if not capture.isOpened():
-            raise ValueError("Can not open video")
+            raise ValueError("Не удалось открыть видео")
 
         count = 0
         while count < max_frames and capture.grab():
@@ -20,7 +20,7 @@ def get_video_metadata(path):
     capture = cv2.VideoCapture(path)
     try:
         if not capture.isOpened():
-            raise ValueError("Can not open file")
+            raise ValueError("Не удалось открыть видео")
 
         fps = capture.get(cv2.CAP_PROP_FPS)
         width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))

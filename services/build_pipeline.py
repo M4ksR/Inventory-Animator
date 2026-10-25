@@ -8,27 +8,22 @@ from services.frame_extractor import extract_frames
 from services.strip_builder import build_strip
 from services.resourcepack_builder import build_resourcepack
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-temp_root = PROJECT_ROOT / "temp"
-
-temp_root.mkdir(parents=True, exist_ok=True)
-
 def create_resourcepack(video_path, transparency, destination_folder, max_frames=500, progress_callback=None):
     def report_progress(count):
         if progress_callback is not None:
             progress_callback(count, expected_count)
 
-    with tempfile.TemporaryDirectory(dir=temp_root, prefix="build_") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="inventory_build_") as temp_dir:
         workspace = Path(temp_dir)
 
         destination_folder = Path(destination_folder)
         if destination_folder.exists():
-            raise FileExistsError("Destination folder already exists")
+            raise FileExistsError("Ресурс-пак с таким именем уже создан")
 
         expected_count = count_video_frames(video_path, max_frames)
 
         if expected_count <= 0:
-            raise ValueError("Video contains no frames")
+            raise ValueError("Видео не содержит кадров")
 
         frames = extract_frames(video_path, transparency, expected_count, progress_callback=report_progress)
         strip_path = workspace / "inventory.png"

@@ -2,6 +2,7 @@ import flet as ft
 import asyncio
 import re
 import os
+import sys
 
 from pathlib import Path
 
@@ -9,7 +10,10 @@ from services.video_reader import get_video_metadata
 from services.build_pipeline import create_resourcepack
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-OUTPUT_FOLDER = PROJECT_ROOT / "output"
+ASSETS_DIR = PROJECT_ROOT / "assets"
+
+APP_ROOT = (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else PROJECT_ROOT)
+OUTPUT_FOLDER = APP_ROOT / "output"
 
 def main(page: ft.Page):
     # параметры окна
@@ -271,7 +275,7 @@ def main(page: ft.Page):
             await asyncio.to_thread(create_resourcepack,
                                     selected_video_path,
                                     slider.value,
-                                    PROJECT_ROOT / "output" / name,
+                                    OUTPUT_FOLDER / name,
                                     max_frames,
                                     on_progress)
 
@@ -313,4 +317,4 @@ def main(page: ft.Page):
     page.add(ft.Row(controls=[github_link],alignment=ft.MainAxisAlignment.CENTER))
 
 if __name__ == "__main__":
-    ft.run(main)
+    ft.run(main, assets_dir=str(ASSETS_DIR))

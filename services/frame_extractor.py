@@ -13,11 +13,11 @@ def extract_frames(video_path, transparency=100, max_frames=10, progress_callbac
 
     try:
         if not capture.isOpened():
-            raise ValueError("Can not open file")
+            raise ValueError("Не удалось открыть видео")
 
         template = cv2.imread(template_path, cv2.IMREAD_UNCHANGED)
         if template is None:
-            raise ValueError("Can not open template")
+            raise ValueError("Не удалось открыть шаблон инвентаря")
 
         success, frame = capture.read()
         count = 0

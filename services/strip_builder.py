@@ -9,7 +9,7 @@ from services.frame_processor import FRAME_WIDTH, FRAME_HEIGHT
 def rows_generator(frames):
     for frame in frames:
         if frame.shape != (FRAME_HEIGHT, FRAME_WIDTH, 4):
-            raise ValueError("Invalid frame size or format")
+            raise ValueError("Ошибка размеров кадров")
 
         rgba_frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGBA)
         for row in rgba_frame:
@@ -18,7 +18,7 @@ def rows_generator(frames):
 # функция сборки всех кадров в единую вертикальную ленту
 def build_strip(frames, frame_count, output_path):
     if frame_count <= 0:
-        raise ValueError("Frame count must be positive")
+        raise ValueError("Количество кадров должно быть положительным")
 
     save_path = Path(output_path)
     save_path.parent.mkdir(parents=True, exist_ok=True)

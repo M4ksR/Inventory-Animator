@@ -7,11 +7,11 @@ source_folder = PROJECT_ROOT / "assets/resourcepack_template/"
 def build_resourcepack(strip_path, destination_folder):
     strip_path = Path(strip_path)
     if not strip_path.is_file():
-        raise FileNotFoundError("Animation strip not found")
+        raise FileNotFoundError("Не удалось открыть ленту изображений")
 
     destination_folder = Path(destination_folder)
     if not source_folder.is_dir():
-        raise NotADirectoryError("Source folder not found")
+        raise NotADirectoryError("Не удалось открыть шаблон ресурс-пака")
 
     inventory_path = destination_folder / "assets/minecraft/optifine/anim/inventory/inventory.png"
 
