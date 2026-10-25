@@ -1,7 +1,8 @@
 import shutil
 from pathlib import Path
 
-source_folder = Path("assets/resourcepack_template/")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+source_folder = PROJECT_ROOT / "assets/resourcepack_template/"
 
 def build_resourcepack(strip_path, destination_folder):
     strip_path = Path(strip_path)

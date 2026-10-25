@@ -8,7 +8,9 @@ from services.frame_extractor import extract_frames
 from services.strip_builder import build_strip
 from services.resourcepack_builder import build_resourcepack
 
-temp_root = Path("temp")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+temp_root = PROJECT_ROOT / "temp"
+
 temp_root.mkdir(parents=True, exist_ok=True)
 
 def create_resourcepack(video_path, transparency, destination_folder, max_frames=10):

@@ -88,7 +88,7 @@ def main(page: ft.Page):
             ft.Text("Настройки"),
             resourcepack_name,
             ft.Row(controls=[
-                ft.Text("Прозрачность"),
+                ft.Text("Непрозрачность"),
                 slider,
                 trans_text
             ]),
@@ -123,10 +123,12 @@ def main(page: ft.Page):
                             {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}):
                 name = "github M4ksR"
 
+            PROJECT_ROOT = Path(__file__).resolve().parent
+
             await asyncio.to_thread(create_resourcepack,
                                     selected_video_path,
                                     slider.value,
-                                    Path("output") / name)
+                                    PROJECT_ROOT / "output" / name)
 
             status_preview.value = "Ресурс-Пак собран"
 
