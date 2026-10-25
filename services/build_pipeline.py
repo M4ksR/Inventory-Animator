@@ -13,7 +13,11 @@ temp_root = PROJECT_ROOT / "temp"
 
 temp_root.mkdir(parents=True, exist_ok=True)
 
-def create_resourcepack(video_path, transparency, destination_folder, max_frames=500):
+def create_resourcepack(video_path, transparency, destination_folder, max_frames=500, progress_callback=None):
+    def report_progress(count):
+        if progress_callback is not None:
+            progress_callback(count, expected_count)
+
     with tempfile.TemporaryDirectory(dir=temp_root, prefix="build_") as temp_dir:
         workspace = Path(temp_dir)
 
@@ -21,7 +25,7 @@ def create_resourcepack(video_path, transparency, destination_folder, max_frames
         if destination_folder.exists():
             raise FileExistsError("Destination folder already exists")
 
-        frames = extract_frames(video_path, transparency, max_frames)
+        frames = extract_frames(video_path, transparency, max_frames, progress_callback=report_progress)
         strip_path = workspace / "inventory.png"
         metadata = get_video_metadata(video_path)
 

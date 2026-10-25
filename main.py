@@ -14,15 +14,30 @@ def main(page: ft.Page):
     page.window.height = 700
     page.theme_mode = ft.ThemeMode.DARK
 
+    # строка прогресса
+    progress_bar = ft.ProgressBar(value=0,
+                                  width=340,
+                                  bar_height=8,
+                                  color="#6595E9")
+
+    progress_label = ft.Text(f"\nГенерация ресурс-пака: 0%")
+    progress_text = ft.Text("Обработано 0 / 500 кадров")
+
     # контейнер предпросмотра
     status_preview = ft.Text("Предпросмотр")
+
     preview = ft.Container(
         width=400,
         height=350,
         bgcolor="#263447",
         padding=20,
         border_radius=10,
-        content=status_preview
+        content=ft.Column(controls=[
+            status_preview,
+            progress_label,
+            progress_bar,
+            progress_text
+        ])
     )
 
     # поле ввода для названия ресурс-пака
@@ -71,6 +86,9 @@ def main(page: ft.Page):
                                f"Длительность: {metadata['duration']} сек\n"
                                f"FPS: {metadata['fps']}\n"
                                f"Количество кадров: {metadata['frame_count']}")
+            progress_text.value = f"Обработано 0 / {min(metadata['frame_count'],int(maximum_frames_field.value))} кадров"
+            page.update()
+
         except ValueError as error:
             status_preview.value = f"Ошибка загрузки видео: {error}"
 
@@ -161,8 +179,25 @@ def main(page: ft.Page):
 
         button.disabled = True
 
+        progress_bar.value = 0
+        progress_label.value = "\nГенерация ресурс-пака: 0%"
+        progress_text.value = "Обработано 0 кадров"
+
         status_preview.value = "Начинаем создание ресурспака"
         page.update()
+
+        loop = asyncio.get_running_loop()
+
+        # обновление интерфейса
+        def update_progress(count, total):
+            progress_bar.value = 0.95 * count / total
+            progress_text.value = f"Обработано {count} / {total} кадров"
+            progress_label.value = f"\nГенерация ресурс-пака: {progress_bar.value:.0%}"
+            page.update()
+
+        def on_progress(count, total):
+            if count % 10 == 0 or count == total:
+                loop.call_soon_threadsafe(update_progress, count, total)
 
         try:
             name = (resourcepack_name.value or "").strip()
@@ -180,8 +215,11 @@ def main(page: ft.Page):
                                     selected_video_path,
                                     slider.value,
                                     PROJECT_ROOT / "output" / name,
-                                    max_frames)
+                                    max_frames,
+                                    on_progress)
 
+            progress_bar.value = 1
+            progress_label.value = "\nГенерация ресурс-пака: 100%"
             status_preview.value = "Ресурс-Пак собран"
 
         except (ValueError, OSError) as error:

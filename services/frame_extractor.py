@@ -8,7 +8,7 @@ from services.frame_processor import (resize_frame,
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 template_path = PROJECT_ROOT / "assets/templates/inventory_overlay.png"
 
-def extract_frames(video_path, transparency=100, max_frames=10):
+def extract_frames(video_path, transparency=100, max_frames=10, progress_callback=None):
     capture = cv2.VideoCapture(video_path)
 
     try:
@@ -31,6 +31,10 @@ def extract_frames(video_path, transparency=100, max_frames=10):
 
             # произведем наложение картинки на шаблон
             processed_frame = overlay_inventory(processed_frame, template)
+
+            # функция для подсчета готовых кадров
+            if progress_callback is not None:
+                progress_callback(count + 1)
 
             # вернем готовый кадр наружу
             yield processed_frame
