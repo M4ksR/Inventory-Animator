@@ -1,7 +1,11 @@
 import flet as ft
 import asyncio
+import re
+
+from pathlib import Path
 
 from services.video_reader import get_video_metadata
+from services.build_pipeline import create_resourcepack
 
 def main(page: ft.Page):
     # параметры окна
@@ -60,15 +64,15 @@ def main(page: ft.Page):
         file_path = file[0].path
 
         try:
-            metadata = await asyncio.to_thread(get_video_metadata, selected_video_path)
+            metadata = await asyncio.to_thread(get_video_metadata, file_path)
             selected_video_path = file_path
             file_info.value = (f"Имя файла: {selected_video_name}\n"
                                f"Разрешение: {metadata['width']}x{metadata['height']}\n"
                                f"Длительность: {metadata['duration']} сек\n"
                                f"FPS: {metadata['fps']}\n"
                                f"Количество кадров: {metadata['frame_count']}")
-        except ValueError:
-            return
+        except ValueError as error:
+            status_preview.value = f"Ошибка загрузки видео: {error}"
 
     file_picker = ft.FilePicker()
     file_info = ft.Text("Файл не выбран")
@@ -103,12 +107,40 @@ def main(page: ft.Page):
     page.add(ft.Row(controls=[preview,settings]))
 
     # кнопка сборки ресурс-пака
-    def create_resourcepack(e): status_preview.value = "Начинаем создание ресурспака"
+    async def on_build_click(e):
+        if selected_video_path is None:
+            return
+
+        button.disabled = True
+
+        status_preview.value = "Начинаем создание ресурспака"
+        page.update()
+
+        try:
+            name = (resourcepack_name.value or "").strip()
+            if not name or (re.search(r'[<>:"/\\|?*\x00-\x1f]', name) or name in (".", "..")
+                            or name.endswith(".") or name.upper().split(".")[0] in
+                            {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}):
+                name = "github M4ksR"
+
+            await asyncio.to_thread(create_resourcepack,
+                                    selected_video_path,
+                                    slider.value,
+                                    Path("output") / name)
+
+            status_preview.value = "Ресурс-Пак собран"
+
+        except (ValueError, OSError) as error:
+            status_preview.value = f"Ошибка: {error}"
+
+        finally:
+            button.disabled = False
+            page.update()
 
     button = ft.Button(width=815,
                        height=40,
                        content="Создать Ресурс-Пак",
-                       on_click=create_resourcepack)
+                       on_click=on_build_click)
     page.add(button)
 
 if __name__ == "__main__":
