@@ -7,12 +7,20 @@ from pathlib import Path
 from services.video_reader import get_video_metadata
 from services.build_pipeline import create_resourcepack
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+
 def main(page: ft.Page):
     # параметры окна
     page.title = "Inventory Animator"
     page.window.width = 845
-    page.window.height = 700
+    page.window.height = 650
+    page.window.maximizable = False
+    page.window.resizable = False
     page.theme_mode = ft.ThemeMode.DARK
+    page.window.icon = str(PROJECT_ROOT / "assets/icon.ico")
+
+    github_link = ft.TextButton(content="created by GitHub M4ksR",
+                                url="https://github.com/M4ksR")
 
     # строка прогресса
     progress_bar = ft.ProgressBar(value=0,
@@ -24,14 +32,15 @@ def main(page: ft.Page):
     progress_text = ft.Text("Обработано 0 / 500 кадров")
 
     # контейнер предпросмотра
-    status_preview = ft.Text("Предпросмотр")
+    status_preview = ft.Text("Готов к генерации")
 
     preview = ft.Container(
         width=400,
-        height=350,
+        height=460,
         bgcolor="#263447",
         padding=20,
-        border_radius=10,
+        border=ft.Border.all(1, "#3E516A"),
+        border_radius=14,
         content=ft.Column(controls=[
             status_preview,
             progress_label,
@@ -43,7 +52,7 @@ def main(page: ft.Page):
     # поле ввода для названия ресурс-пака
     resourcepack_name = ft.TextField(
         label="Название ресурспака",
-        hint_text="created by github M4ksR"
+        hint_text="Anim Inventory"
     )
 
     # функция установки значения прозрачности рядом с ползунком
@@ -83,17 +92,26 @@ def main(page: ft.Page):
             selected_video_path = file_path
             file_info.value = (f"Имя файла: {selected_video_name}\n"
                                f"Разрешение: {metadata['width']}x{metadata['height']}\n"
-                               f"Длительность: {metadata['duration']} сек\n"
-                               f"FPS: {metadata['fps']}\n"
+                               f"Длительность: {metadata['duration']:.1f} сек\n"
+                               f"FPS: {metadata['fps']:.1f}\n"
                                f"Количество кадров: {metadata['frame_count']}")
             progress_text.value = f"Обработано 0 / {min(metadata['frame_count'],int(maximum_frames_field.value))} кадров"
+            file_info_container.visible = True
             page.update()
 
         except ValueError as error:
             status_preview.value = f"Ошибка загрузки видео: {error}"
 
     file_picker = ft.FilePicker()
-    file_info = ft.Text("Файл не выбран")
+
+    file_info = ft.Text("")
+    file_info_container = ft.Container(
+        bgcolor="#1B2737",
+        padding=12,
+        border_radius=10,
+        content=file_info,
+        visible=False
+    )
 
     # изменения лимита кадров
     maximum_frames = 500
@@ -141,36 +159,54 @@ def main(page: ft.Page):
     # контейнер настроек
     settings = ft.Container(
         width=400,
-        height=350,
+        height=460,
         bgcolor="#263447",
         padding=20,
-        border_radius=10,
-        content=ft.Column(controls=[
-            ft.Text("Настройки"),
-            resourcepack_name,
-            ft.Row(controls=[
-                ft.Text("Непрозрачность"),
-                slider,
-                trans_text
-            ]),
-            ft.Row(controls=[
-                ft.Text("Кадры"),
-                ft.Button(
-                    content="Выбрать файл",
-                    on_click=choose_video,
-                )
-            ]),
-            ft.Row(controls=[
-                maximum_frames_field,
-                ft.Button(content="Изменить лимит",
-                          on_click=show_frames_limit_warning)
-            ]),
-            file_info
-        ])
+        border_radius=16,
+        border=ft.Border.all(1, "#40516A"),
+
+        content=ft.Column(
+            spacing=12,
+            controls=[resourcepack_name,
+                      ft.Divider(height=1, color="#40516A"),
+                      ft.Row(alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                             controls=[ft.Text("Видео", size=16, weight=ft.FontWeight.W_600),
+                                       ft.Button(content="Выбрать файл", on_click=choose_video)]),
+
+                file_info_container,
+                ft.Divider(height=1, color="#40516A"),
+                ft.Text("Параметры анимации", size=16, weight=ft.FontWeight.W_600),
+
+                ft.Row(spacing=10,
+                       controls=[ft.Text("Непрозрачность"), slider, trans_text]),
+
+                ft.Row(spacing=10,
+                       controls=[maximum_frames_field,
+                                 ft.Button(content="Изменить",on_click=show_frames_limit_warning)])])
     )
 
     # добавление контейнеров
-    page.add(ft.Row(controls=[preview,settings]))
+    preview_section = ft.Column(
+        width=400,
+        spacing=10,
+        controls=[
+            ft.Text("Предпросмотр", size=22, weight=ft.FontWeight.BOLD),
+            preview
+        ],
+    )
+
+    # подписи контейнеров
+    settings_section = ft.Column(
+        width=400,
+        spacing=10,
+        controls=[ft.Text("Настройки",
+                          size=22,
+                          weight=ft.FontWeight.BOLD),
+                  settings])
+
+    page.add(ft.Row(controls=[preview_section, settings_section],
+                    spacing=12,
+                    vertical_alignment=ft.CrossAxisAlignment.START))
 
     # кнопка сборки ресурс-пака
     async def on_build_click(e):
@@ -204,9 +240,7 @@ def main(page: ft.Page):
             if not name or (re.search(r'[<>:"/\\|?*\x00-\x1f]', name) or name in (".", "..")
                             or name.endswith(".") or name.upper().split(".")[0] in
                             {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}):
-                name = "github M4ksR"
-
-            PROJECT_ROOT = Path(__file__).resolve().parent
+                name = "§6§l     Anim Inventory"
 
             normalize_frame_limit(None)
             max_frames = int(maximum_frames_field.value)
@@ -233,7 +267,9 @@ def main(page: ft.Page):
                        height=40,
                        content="Создать Ресурс-Пак",
                        on_click=on_build_click)
+
     page.add(button)
+    page.add(ft.Row(controls=[github_link],alignment=ft.MainAxisAlignment.CENTER))
 
 if __name__ == "__main__":
     ft.run(main)
