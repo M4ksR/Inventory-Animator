@@ -31,9 +31,27 @@ def main(page: ft.Page):
     progress_label = ft.Text(f"\nГенерация ресурс-пака: 0%")
     progress_text = ft.Text("Обработано 0 / 500 кадров")
 
+    # пример наложения инвентаря на картинку для оценки непрозрачности
+    preview_sample = ft.Image(src="templates/preview_sample.png",
+                              width=330,
+                              height=280,
+                              fit=ft.BoxFit.FILL,
+                              opacity=1.0)
+
+    preview_overlay = ft.Image(src="templates/inventory_overlay.png",
+                               width=330,
+                               height=280,
+                               fit=ft.BoxFit.FILL)
+
+    inventory_preview = ft.Stack(width=330,
+                                 height=280,
+                                 controls=[
+                                     preview_sample,
+                                     preview_overlay
+                                 ])
+
     # контейнер предпросмотра
     status_preview = ft.Text("Готов к генерации")
-
     preview = ft.Container(
         width=400,
         height=460,
@@ -43,6 +61,7 @@ def main(page: ft.Page):
         border_radius=14,
         content=ft.Column(controls=[
             status_preview,
+            inventory_preview,
             progress_label,
             progress_bar,
             progress_text
@@ -58,6 +77,8 @@ def main(page: ft.Page):
     # функция установки значения прозрачности рядом с ползунком
     def set_trans(e):
         trans_text.value = f"{e.control.value:.0f}%"
+        preview_sample.opacity = e.control.value / 100
+        page.update()
 
     # ползунок прозрачности и величина прозрачности
     slider = ft.Slider(
