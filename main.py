@@ -1,6 +1,7 @@
 import flet as ft
 import asyncio
 import re
+import os
 
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from services.video_reader import get_video_metadata
 from services.build_pipeline import create_resourcepack
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+OUTPUT_FOLDER = PROJECT_ROOT / "output"
 
 def main(page: ft.Page):
     # параметры окна
@@ -234,7 +236,7 @@ def main(page: ft.Page):
         if selected_video_path is None:
             return
 
-        button.disabled = True
+        create_button.disabled = True
 
         progress_bar.value = 0
         progress_label.value = "\nГенерация ресурс-пака: 0%"
@@ -281,15 +283,33 @@ def main(page: ft.Page):
             status_preview.value = f"Ошибка: {error}"
 
         finally:
-            button.disabled = False
+            create_button.disabled = False
             page.update()
 
-    button = ft.Button(width=815,
+    create_button = ft.Button(width=600,
                        height=40,
                        content="Создать Ресурс-Пак",
                        on_click=on_build_click)
 
-    page.add(button)
+    # кнопка открытия папки ресурс-пака
+    def on_path_click(e):
+        if not OUTPUT_FOLDER.exists():
+            status_preview.value = "Сначала создайте свой первый инвентарь"
+            page.update()
+            return
+
+        try:
+            os.startfile(str(OUTPUT_FOLDER))
+        except OSError as error:
+            status_preview.value = f"Не удалось открыть папку {error}"
+            page.update()
+
+    path_button = ft.Button(width=200,
+                            height=40,
+                            content="Открыть папку",
+                            on_click=on_path_click)
+
+    page.add(ft.Row(controls=[create_button, path_button]))
     page.add(ft.Row(controls=[github_link],alignment=ft.MainAxisAlignment.CENTER))
 
 if __name__ == "__main__":
